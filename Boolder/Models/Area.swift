@@ -211,7 +211,7 @@ extension Area {
         
         let query = circuits.select(circuits[Circuit.id], problems[Problem.id].count)
             .join(problems, on: circuits[Circuit.id] == problems[Problem.circuitId])
-            .group(circuits[Circuit.id], having: problems[Problem.id].count >= 10)
+            .group(circuits[Circuit.id], having: problems[Problem.id].count >= 5)
             .filter(problems[Problem.areaId] == self.id)
             .order(Circuit.averageGrade.asc)
 
