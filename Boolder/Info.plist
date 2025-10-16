@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Boolder</string>
+	<string>TestAppProd_EB</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -31,9 +31,14 @@
 	<string></string>
 	<key>NSCameraUsageDescription</key>
 	<string>You&apos;ll be able to take photos of problems.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location will be displayed on the map to help you find your way around.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your location will be displayed on the map to help you find your way around.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>LocationAccuracyAuthorizationDescription</key>
+		<string>Please enable precise location. The map works best only when precise location data is available.</string>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location will be displayed on the map to help you find your way around.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
@@ -72,10 +77,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
-	<dict>
-		<key>LocationAccuracyAuthorizationDescription</key>
-		<string>Please enable precise location. The map works best only when precise location data is available.</string>
-	</dict>
 </dict>
 </plist>

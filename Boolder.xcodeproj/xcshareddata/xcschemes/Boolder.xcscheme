@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "37A8C6252453263300DC161F"
                BuildableName = "Boolder.app"
-               BlueprintName = "Boolder"
+               BlueprintName = "TestAppProd"
                ReferencedContainer = "container:Boolder.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,7 +46,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "37A8C6252453263300DC161F"
             BuildableName = "Boolder.app"
-            BlueprintName = "Boolder"
+            BlueprintName = "TestAppProd"
             ReferencedContainer = "container:Boolder.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -67,7 +67,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "37A8C6252453263300DC161F"
             BuildableName = "Boolder.app"
-            BlueprintName = "Boolder"
+            BlueprintName = "TestAppProd"
             ReferencedContainer = "container:Boolder.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
