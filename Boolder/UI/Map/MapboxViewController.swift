@@ -25,7 +25,8 @@ class MapboxViewController: UIViewController {
         
         let myMapInitOptions = MapInitOptions(
             cameraOptions: cameraOptions,
-            styleURI: StyleURI(rawValue: "mapbox://styles/nmondollot/cl95n147u003k15qry7pvfmq2")
+            // styleURI: StyleURI(rawValue: "mapbox://styles/nmondollot/cl95n147u003k15qry7pvfmq2")
+            styleURI: StyleURI(rawValue: "mapbox://styles/ewanbuckingham/cmfwwrcne00dy01siefnmfctf")
         )
         
         mapView = MapView(frame: view.bounds, mapInitOptions: myMapInitOptions)
@@ -81,15 +82,17 @@ class MapboxViewController: UIViewController {
         self.view.addSubview(mapView)
     }
 
-    let problemsSourceLayerId = "problems-ayes3a" // name of the layer in the mapbox tileset
+    let problemsSourceLayerId = "problems-310l1u" // name of the layer in the mapbox tileset (circuits specified later in this code)
     
     func addSources() {
         var problems = VectorSource(id: "problems")
-        problems.url = "mapbox://nmondollot.4xsv235p"
+        problems.url = "mapbox://ewanbuckingham.8kq8ca2w"
         problems.promoteId2 = .byLayer([problemsSourceLayerId: .constant("id")]) // needed to make Feature-State work
         
         var circuits = VectorSource(id: "circuits")
-        circuits.url = "mapbox://nmondollot.11sumdgh"
+        // circuits.url = "mapbox://nmondollot.11sumdgh"
+        circuits.url = "mapbox://ewanbuckingham.ct4zzpoi"
+        
 
         do {
             try self.mapView.mapboxMap.addSource(problems)
@@ -290,7 +293,7 @@ class MapboxViewController: UIViewController {
         // ===========================
         
         var circuitsLayer = LineLayer(id: "circuits", source: "circuits")
-        circuitsLayer.sourceLayer = "circuits-9weff8"
+        circuitsLayer.sourceLayer = "circuits-99ta7u"
         circuitsLayer.minZoom = 15
         circuitsLayer.lineWidth = .constant(2)
         circuitsLayer.lineDasharray = .constant([4,1])

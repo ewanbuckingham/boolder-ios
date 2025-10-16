@@ -31,7 +31,7 @@ struct Topo: Hashable {
     }
     
     var remoteFile: URL {
-        #URL(string: "https://assets.boolder.com/proxy/topos/\(id)")!
+        // URL(string: "https://assets.boolder.com/proxy/topos/\(id)")!
         URL(string: "https://assets.351design.com/proxys/topos/\(id)")!
     }
 }
