@@ -39,12 +39,14 @@ struct ProblemDetailsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ZStack {
                         if showingRouteDescription {
-                            Text(problem.localizedName) //Show's route description 
-                                .font(.title)
-                                .padding()
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .background(Color(UIColor.systemBackground))
+                            if let description = problem.routeDescription {
+                                Text(description)
+                                    .font(.title)
+                                    .padding()
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .background(Color(UIColor.systemBackground))
+                            }
                         } else {
                             TopoView(
                                 problem: $problem,
@@ -239,6 +241,8 @@ struct ProblemDetailsView: View {
                     .padding(.horizontal, 16)
                 }
                 .buttonStyle(Pill())
+                .disabled(problem.routeDescription == nil)
+                .opacity(problem.routeDescription == nil ? 0.5 : 1.0) // visually greyed out
                 
                 // Share button
                 Button(action: {
@@ -260,6 +264,7 @@ struct ProblemDetailsView: View {
             .padding(.vertical, 4)
         }
     }
+
     
     var saveButtons: [ActionSheet.Button] {
         var buttons = [ActionSheet.Button]()

@@ -3,7 +3,7 @@
 //  Boolder
 //
 //  Created by Nicolas Mondollot on 09/05/2020.
-//  Copyright © 2020 Nicolas Mondollot. All rights reserved.
+//  Updated by ChatGPT on 22/10/2025
 //
 
 import UIKit
@@ -30,8 +30,33 @@ struct Problem : Identifiable {
     let popularity: Int?
     let parentId: Int?
     
+    // NEW FIELDS
+    let routeDescription: String?
+    let firstAscentionist: String?
+    let firstAscentDate: Date?
+    
     // TODO: remove
-    static let empty = Problem(id: 0, name: "", nameEn: "", nameSearchable: "", grade: Grade.min, coordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0), steepness: .other, sitStart: false, areaId: 0, circuitId: nil, circuitColor: .offCircuit, circuitNumber: "", bleauInfoId: nil, featured: false, popularity: 0, parentId: nil)
+    static let empty = Problem(
+        id: 0,
+        name: "",
+        nameEn: "",
+        nameSearchable: "",
+        grade: Grade.min,
+        coordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0),
+        steepness: .other,
+        sitStart: false,
+        areaId: 0,
+        circuitId: nil,
+        circuitColor: .offCircuit,
+        circuitNumber: "",
+        bleauInfoId: nil,
+        featured: false,
+        popularity: 0,
+        parentId: nil,
+        routeDescription: nil,
+        firstAscentionist: nil,
+        firstAscentDate: nil
+    )
     
     var circuitUIColor: UIColor {
         circuitColor?.uicolor ?? UIColor.gray
@@ -44,8 +69,7 @@ struct Problem : Identifiable {
     var localizedName: String {
         if NSLocale.websiteLocale == "fr" {
             return name ?? ""
-        }
-        else {
+        } else {
             return nameEn ?? ""
         }
     }
@@ -53,14 +77,10 @@ struct Problem : Identifiable {
     var circuitNumberComparableValue: Double {
         if let int = Int(circuitNumber) {
             return Double(int)
-        }
-        else {
-            if let int = Int(circuitNumber.dropLast()) {
-                return 0.5 + Double(int)
-            }
-            else {
-                return 0
-            }
+        } else if let int = Int(circuitNumber.dropLast()) {
+            return 0.5 + Double(int)
+        } else {
+            return 0
         }
     }
     
@@ -70,7 +90,6 @@ struct Problem : Identifiable {
     
     var topo: Topo? {
         guard let topoId = topoId else { return nil }
-        
         return Topo(id: topoId, areaId: areaId)
     }
     
@@ -81,8 +100,7 @@ struct Problem : Identifiable {
     var variants: [Problem] {
         if let parent = parent {
             return parent.variants
-        }
-        else {
+        } else {
             return [self] + children
         }
     }
@@ -92,25 +110,20 @@ struct Problem : Identifiable {
         let tiebreaker = Double(id) / 100
         return Double(popularity ?? 0) + bonusCircuit + tiebreaker
     }
-
+    
     // TODO: move to Line
     var lineFirstPoint: Line.PhotoPercentCoordinate? {
         guard let line = line else { return nil }
         guard let coordinates = line.coordinates else { return nil }
-        guard let firstPoint = coordinates.first else { return nil }
-        
-        return firstPoint
+        return coordinates.first
     }
-    
     
     var isFavorite: Bool {
         favorite != nil
     }
     
     var favorite: Favorite? {
-        favorites.first { (favorite: Favorite) -> Bool in
-            return Int(favorite.problemId) == id
-        }
+        favorites.first { Int($0.problemId) == id }
     }
     
     var isTicked: Bool {
@@ -118,9 +131,7 @@ struct Problem : Identifiable {
     }
     
     var tick: Tick? {
-        ticks.first { (tick: Tick) -> Bool in
-            return Int(tick.problemId) == id
-        }
+        ticks.first { Int($0.problemId) == id }
     }
 }
 
@@ -144,11 +155,19 @@ extension Problem {
     static let featured = Expression<Int>("featured")
     static let popularity = Expression<Int?>("popularity")
     
+    // NEW FIELDS
+    static let routeDescription = Expression<String?>("route_description")
+    static let firstAscentionist = Expression<String?>("first_ascentionist")
+    static let firstAscentDate = Expression<String?>("first_ascent_date")
+    
     static func load(id: Int) -> Problem? {
         do {
             let problems = Table("problems").filter(self.id == id)
             
             if let p = try SqliteStore.shared.db.pluck(problems) {
+                let dateFormatter = ISO8601DateFormatter()
+                let ascentDate = p[firstAscentDate].flatMap { dateFormatter.date(from: $0) }
+                
                 return Problem(
                     id: id,
                     name: p[name],
@@ -165,14 +184,16 @@ extension Problem {
                     bleauInfoId: p[bleauInfoId],
                     featured: p[featured] == 1,
                     popularity: p[popularity],
-                    parentId: p[parentId]
+                    parentId: p[parentId],
+                    routeDescription: p[routeDescription],
+                    firstAscentionist: p[firstAscentionist],
+                    firstAscentDate: ascentDate
                 )
             }
             
             return nil
-        }
-        catch {
-            print (error)
+        } catch {
+            print(error)
             return nil
         }
     }
@@ -184,98 +205,75 @@ extension Problem {
             .limit(20)
         
         do {
-            return try SqliteStore.shared.db.prepare(query).map { p in
-                Problem.load(id: p[id])
-            }.compactMap{$0}
-        }
-        catch {
-            print (error)
+            return try SqliteStore.shared.db.prepare(query)
+                .map { p in Problem.load(id: p[id]) }
+                .compactMap { $0 }
+        } catch {
+            print(error)
             return []
         }
     }
     
-    // TODO: handle multiple lines
     var line: Line? {
-        let lines = Table("lines")
-            .filter(Line.problemId == id)
-        
+        let lines = Table("lines").filter(Line.problemId == id)
         do {
             if let l = try SqliteStore.shared.db.pluck(lines) {
                 return Line.load(id: l[Line.id])
             }
-            
             return nil
-        }
-        catch {
-            print (error)
+        } catch {
+            print(error)
             return nil
         }
     }
     
     var otherProblemsOnSameTopo: [Problem] {
         guard let l = line else { return [] }
-        
-        let lines = Table("lines")
-            .filter(Line.topoId == l.topoId)
-
+        let lines = Table("lines").filter(Line.topoId == l.topoId)
         do {
-            let problemsOnSameTopo = try SqliteStore.shared.db.prepare(lines).map { l in
-                Self.load(id: l[Line.problemId])
-            }
-            
-            return problemsOnSameTopo.compactMap{$0}
-                .filter { $0.topoId == self.topoId } // to avoid showing multi-lines problems (eg. traverses) that don't actually *start* on the same topo
+            let problemsOnSameTopo = try SqliteStore.shared.db.prepare(lines)
+                .map { Self.load(id: $0[Line.problemId]) }
+            return problemsOnSameTopo.compactMap { $0 }
+                .filter { $0.topoId == self.topoId }
                 .filter { $0.line?.coordinates != nil }
-        }
-        catch {
-            print (error)
+        } catch {
+            print(error)
             return []
         }
     }
     
-    // TODO: move to Topo
     var startGroups: [StartGroup] {
         var groups = [StartGroup]()
-        
         otherProblemsOnSameTopo.forEach { p in
-            let overlapping = groups.filter{$0.overlaps(with: p)}
-            
+            let overlapping = groups.filter { $0.overlaps(with: p) }
             let newGroup = StartGroup(problem: p)
-            
-            // we merge the groups that overlap with the current problem
             overlapping.forEach { group in
-                group.problems.forEach{ newGroup.addProblem($0)}
+                group.problems.forEach { newGroup.addProblem($0) }
                 groups.remove(at: groups.firstIndex(of: group)!)
             }
-            
             groups.append(newGroup)
         }
-        
         return groups
     }
     
-    var startGroup : StartGroup? {
+    var startGroup: StartGroup? {
         startGroups.first { $0.problems.contains(self) }
     }
-
+    
     var children: [Problem] {
-        let problems = Table("problems")
-            .filter(Problem.parentId == id)
-
+        let problems = Table("problems").filter(Problem.parentId == id)
         do {
-            return try SqliteStore.shared.db.prepare(problems).map { problem in
-                Self.load(id: problem[Problem.id])
-            }.compactMap{$0}
-        }
-        catch {
-            print (error)
+            return try SqliteStore.shared.db.prepare(problems)
+                .map { Self.load(id: $0[Problem.id]) }
+                .compactMap { $0 }
+        } catch {
+            print(error)
             return []
         }
     }
     
     var parent: Problem? {
         guard let parentId = parentId else { return nil }
-        
         return Self.load(id: parentId)
     }
     
@@ -283,16 +281,13 @@ extension Problem {
         let circutiNumberInt = (self.circuitNumber == Problem.defaultCircuitNumber) ? 0 : Int(self.circuitNumber)
         if let circuitNumberInt = circutiNumberInt, let circuitId = circuitId {
             let nextNumber = String(circuitNumberInt + 1)
-            
             let query = Table("problems")
                 .filter(Problem.circuitId == circuitId)
                 .filter(Problem.circuitNumber == nextNumber)
-            
             if let p = try! SqliteStore.shared.db.pluck(query) {
                 return Problem.load(id: p[Problem.id])
             }
         }
-        
         return nil
     }
     
@@ -302,12 +297,10 @@ extension Problem {
             let query = Table("problems")
                 .filter(Problem.circuitId == circuitId)
                 .filter(Problem.circuitNumber == previousNumber)
-            
             if let p = try! SqliteStore.shared.db.pluck(query) {
                 return Problem.load(id: p[Problem.id])
             }
         }
-        
         return nil
     }
 }
@@ -316,10 +309,8 @@ extension Problem {
 extension Problem {
     var favorites: [Favorite] {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        
         let request: NSFetchRequest<Favorite> = Favorite.fetchRequest()
         request.sortDescriptors = []
-        
         do {
             return try context.fetch(request)
         } catch {
@@ -329,10 +320,8 @@ extension Problem {
     
     var ticks: [Tick] {
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        
         let request: NSFetchRequest<Tick> = Tick.fetchRequest()
         request.sortDescriptors = []
-        
         do {
             return try context.fetch(request)
         } catch {
@@ -357,7 +346,6 @@ extension Problem : Hashable {
     }
 }
 
-// TODO: move to Topo
 class StartGroup: Identifiable, Equatable {
     private(set) var problems: [Problem]
 
@@ -377,7 +365,6 @@ class StartGroup: Identifiable, Equatable {
             guard let b = p.lineFirstPoint else { return 1.0 }
             return point.distance(to: b)
         }
-        
         return distances.min() ?? 1.0
     }
 
@@ -389,7 +376,6 @@ class StartGroup: Identifiable, Equatable {
         if let index = sortedProblems.firstIndex(of: after) {
             return sortedProblems[(index + 1) % sortedProblems.count]
         }
-        
         return nil
     }
     
@@ -405,3 +391,4 @@ class StartGroup: Identifiable, Equatable {
         Set(lhs.problems.map{$0.id}) == Set(rhs.problems.map{$0.id})
     }
 }
+
