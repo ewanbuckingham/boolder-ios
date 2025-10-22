@@ -3,3 +3,7 @@
 
 # Ignore .mapbox file in the root
 /.mapbox
+
+# Ignore the SQLite database file
+/Boolder/Stores/boolder*.db
+
